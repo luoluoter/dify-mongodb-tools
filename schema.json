@@ -1,0 +1,390 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Dify MongoDB Tools API",
+    "description": "API for MongoDB data operations with dynamic database and collection support",
+    "version": "v1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3333",
+      "description": "Local development server"
+    }
+  ],
+  "paths": {
+    "/api/save": {
+      "post": {
+        "summary": "Save or update data to a specified database and collection",
+        "description": "Save data to a specified database and collection. The 'content' field must be a JSON string. Both db_name and collection_name are required.",
+        "requestBody": {
+          "description": "Data to save",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "db_name": {
+                    "type": "string",
+                    "description": "Target database name (required)"
+                  },
+                  "collection_name": {
+                    "type": "string",
+                    "description": "Target collection name (required)"
+                  },
+                  "uuid": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Unique identifier (optional, auto-generated if not provided)"
+                  },
+                  "uuid_name": {
+                    "type": "string",
+                    "description": "UUID field name (optional, default: 'uuid')"
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "Title of the data (optional)"
+                  },
+                  "content": {
+                    "type": "string",
+                    "description": "JSON content as a string (optional)"
+                  }
+                },
+                "required": [
+                  "db_name",
+                  "collection_name"
+                ]
+              },
+              "example": {
+                "db_name": "my_database",
+                "collection_name": "my_collection",
+                "title": "Sample Title",
+                "content": "{\"key1\":\"value1\",\"key2\":\"value2\"}"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Response message"
+                    },
+                    "id": {
+                      "type": "object",
+                      "properties": {
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "Generated or existing UUID"
+                        }
+                      }
+                    },
+                    "is_new": {
+                      "type": "boolean",
+                      "description": "Whether this is a new record"
+                    }
+                  },
+                  "example": {
+                    "message": "Data saved successfully",
+                    "id": {"uuid": "123e4567-e89b-12d3-a456-426614174000"},
+                    "is_new": true
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Missing required parameters or invalid data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/search": {
+      "get": {
+        "summary": "Search data with complex query conditions",
+        "description": "Search data in a specified database and collection. Supports complex query conditions, sorting, and pagination. Both db_name and collection_name are required.",
+        "parameters": [
+          {
+            "name": "db_name",
+            "in": "query",
+            "description": "Target database name (required)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "my_database"
+          },
+          {
+            "name": "collection_name",
+            "in": "query",
+            "description": "Target collection name (required)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "my_collection"
+          },
+          {
+            "name": "uuid_name",
+            "in": "query",
+            "description": "UUID field name (optional, default: 'uuid')",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "uuid"
+          },
+          {
+            "name": "uuid",
+            "in": "query",
+            "description": "UUID value to search for",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          {
+            "name": "conditions",
+            "in": "query",
+            "description": "JSON string of query conditions",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{\"title\":\"test\",\"status\":\"active\"}"
+          },
+          {
+            "name": "sorts",
+            "in": "query",
+            "description": "JSON string of sort conditions",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{\"created_at\":-1,\"title\":1}"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Limit number of results (optional, default: 5)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "example": 10
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "description": "Skip number of results (optional, default: 0)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "example": 0
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "uuid": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Unique identifier"
+                      },
+                      "title": {
+                        "type": "string",
+                        "description": "Title of the data"
+                      },
+                      "data": {
+                        "type": "object",
+                        "description": "Parsed JSON content"
+                      },
+                      "created_at": {
+                        "type": "integer",
+                        "description": "Creation timestamp (milliseconds)"
+                      },
+                      "updated_at": {
+                        "type": "integer",
+                        "description": "Update timestamp (milliseconds)"
+                      }
+                    }
+                  },
+                  "example": [
+                    {
+                      "uuid": "123e4567-e89b-12d3-a456-426614174000",
+                      "title": "Sample Title",
+                      "data": {
+                        "key1": "value1",
+                        "key2": "value2"
+                      },
+                      "created_at": 1640995200000,
+                      "updated_at": 1640995200000
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Missing required parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health": {
+      "get": {
+        "summary": "Health check endpoint",
+        "description": "Check the health status of the application and database connection",
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": ["healthy"],
+                      "description": "Health status"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Status message"
+                    },
+                    "database": {
+                      "type": "string",
+                      "enum": ["connected"],
+                      "description": "Database connection status"
+                    }
+                  },
+                  "example": {
+                    "status": "healthy",
+                    "message": "服务运行正常",
+                    "database": "connected"
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service is unhealthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": ["unhealthy"],
+                      "description": "Health status"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Status message"
+                    },
+                    "database": {
+                      "type": "string",
+                      "enum": ["disconnected"],
+                      "description": "Database connection status"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "Error details"
+                    }
+                  },
+                  "example": {
+                    "status": "unhealthy",
+                    "message": "服务异常",
+                    "database": "disconnected",
+                    "error": "Connection refused"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {}
+  }
+}
