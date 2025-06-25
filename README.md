@@ -21,7 +21,7 @@
 
 ```bash
 # 克隆项目
-git clone <repository-url>
+git clone https://github.com/luoluoter/dify-mongodb-tools.git
 cd dify-mongodb-tools
 
 # 使用Docker一键部署
@@ -137,5 +137,5 @@ bash start.sh --prod     # 生产模式运行
 ## 🆘 支持
 
 - 📖 [文档](docs/)
-- 🐛 [Issues](../../issues)
+- 🐛 [Issues](https://github.com/luoluoter/dify-mongodb-tools/issues)
 - 💬 联系维护者
